@@ -1,14 +1,30 @@
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { deleteContact } from '../../redux/actions/contacts-actions';
+// import { connect } from 'react-redux';
+// import { deleteContact } from '../../redux/actions/contacts-actions';
 import { MdRemoveCircle } from 'react-icons/md';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+
+import selectors from 'redux/selectors/contacts-selectors';
+import * as operations from 'redux/operations/contacts-operations';
 import {
   ContactContainer,
   ContactItem,
   ContactButton,
 } from './ContactList.styled';
 
-const ContactList = ({ contacts, onDeleteContact }) => {
+const ContactList = () => {
+  const contacts = useSelector(selectors.getVisibleContacts);
+  const dispatch = useDispatch();
+
+  const onDeleteContact = id => {
+    dispatch(operations.deleteContact(id));
+  };
+
+  useEffect(() => {
+    dispatch(operations.fetchContacts());
+  }, [dispatch]);
+
   return (
     <ContactContainer>
       {contacts.map(({ id, name, number }) => (
@@ -25,19 +41,6 @@ const ContactList = ({ contacts, onDeleteContact }) => {
   );
 };
 
-const mapStateToProps = state => {
-  const { filter, contacts } = state;
-  const normalizedFilter = filter.toLowerCase();
-  const visibleContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(normalizedFilter),
-  );
-  return { contacts: visibleContacts };
-};
-
-const mapDispatchToProps = dispatch => ({
-  onDeleteContact: id => dispatch(deleteContact(id)),
-});
-
 ContactList.propTypes = {
   contacts: PropTypes.arrayOf(
     PropTypes.shape({
@@ -47,7 +50,7 @@ ContactList.propTypes = {
     }),
   ),
 
-  onDeleteContact: PropTypes.func.isRequired,
+  // onDeleteContact: PropTypes.func.isRequired,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ContactList);
+export default ContactList;

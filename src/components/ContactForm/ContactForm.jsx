@@ -1,25 +1,34 @@
-import React, { useState } from 'react';
-import SubTitle from 'components/SubTitle';
-import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-// import { addContact } from '../../redux/actions/contacts-actions';
-import { addContact } from 'redux/actions/contacts-actions;';
+import SubTitle from 'components/SubTitle';
+// import { connect } from 'react-redux';
+import toast from 'react-hot-toast';
+import selectors from 'redux/selectors/contacts-selectors';
+import * as operations from 'redux/operations/contacts-operations';
+// import { addContact } from 'redux/actions/contacts-actions;';
 import { Form, Label, Input, AddButton } from './ContactForm.styled';
 import { TiUserAdd, TiUser, TiPhone } from 'react-icons/ti';
 
-function ContactForm({ onSubmit }) {
+export const ContactForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const dispatch = useDispatch();
+  const contacts = useSelector(selectors.getContacts);
 
   const handleChange = e => {
     const { name, value } = e.currentTarget;
+
     switch (name) {
       case 'name':
         setName(value);
         break;
+
       case 'number':
         setNumber(value);
         break;
+
       default:
         return;
     }
@@ -28,7 +37,15 @@ function ContactForm({ onSubmit }) {
   const handleSubmit = e => {
     e.preventDefault();
 
-    onSubmit(name, number);
+    if (
+      contacts.find(
+        contact => contact.name.toLowerCase() === name.toLowerCase(),
+      )
+    ) {
+      toast(`${name} is already in the contact list`);
+    }
+    dispatch(operations.addContact(name, number));
+
     reset();
   };
 
@@ -74,10 +91,10 @@ function ContactForm({ onSubmit }) {
       </AddButton>
     </Form>
   );
-}
+};
 
-const mapDispatchToProps = dispatch => ({
-  onSubmit: (name, number) => dispatch(addContact(name, number)),
-});
+export default ContactForm;
 
-export default connect(null, mapDispatchToProps)(ContactForm);
+ContactForm.propTypes = {
+  onSubmit: PropTypes.func,
+};
